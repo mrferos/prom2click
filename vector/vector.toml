@@ -1,34 +1,9 @@
 # Sources
-#[sources.host_metrics]
-#type = "host_metrics"
-#scrape_interval_secs = "10s"  # Collect metrics every 30 seconds
-#metrics = [
-#  "cpu",           # CPU usage
-#  "disk",          # Disk metrics
-#  "memory",        # Memory usage
-#  "network",       # Network stats
-#  "load",          # Load average
-#]
-
 [sources.internal_metrics]
 type = "internal_metrics"
 scrape_interval_secs = 5
 # Collect internal Vector metrics every 30 seconds
 
-# Transforms
-#[transforms.host_metrics_to_prometheus]
-#type = "remap"  # Apply transformation to the host_metrics
-#inputs = ["host_metrics"]
-#source = '''
-#  .host_metrics = {
-#    "cpu": .cpu,
-#    "memory": .memory,
-#    "disk": .disk,
-#    "network": .network,
-#    "load": .load
-#  }
-#  .timestamp = now()
-#'''
 
 [transforms.internal_metrics_to_prometheus]
 type = "remap"  # Apply transformation to the internal_metrics
