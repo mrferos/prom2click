@@ -2,6 +2,7 @@ package click
 
 import (
 	"context"
+	"fmt"
 	"github.com/prometheus/prometheus/promql"
 	"time"
 )
@@ -26,7 +27,17 @@ func (w *WrappedPromQLEngineImpl) NewRangeQuery(ctx context.Context, opts promql
 
 func GetWrappedPromQLEngine() (WrappedPromQLEngine, error) {
 	engine := promql.NewEngine(promql.EngineOpts{})
+	conn, err := GetConnection()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get clickhouse connection: %w", err)
+	}
+
 	return &WrappedPromQLEngineImpl{
 		engine: engine,
+		queryable: &Queryable{
+			querier: &Querier{
+				conn: conn,
+			},
+		},
 	}, nil
 }
