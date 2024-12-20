@@ -2,9 +2,9 @@
 
 ## Notes
 
-Setting up ClickHouse:
+Setting up dependencies:
 ```bash
-docker run -d --name clickhouse -p 18123:8123 -p19000:9000 --ulimit nofile=262144:262144 clickhouse/clickhouse-server
+docker-compose up -d 
 ```
 
 Schema:
