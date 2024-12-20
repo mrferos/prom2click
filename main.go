@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"prom2click/internal/click"
 	"prom2click/internal/handler"
 	"prom2click/internal/remotewrite"
 	"time"
@@ -26,15 +27,28 @@ func main() {
 		Handler: mux,
 	}
 
-	rwBatcher, err := remotewrite.NewBatcher()
+	conn, err := click.GetConnection()
+
+	if err != nil {
+		logger.Error("Could not get clickhouse connection: ", err)
+		os.Exit(1)
+	}
+
+	rwBatcher, err := remotewrite.NewBatcher(conn)
 	if err != nil {
 		logger.Error("Could not create remote write batcher: ", err)
 		os.Exit(1)
 	}
 
+	chReader, err := click.NewReader(conn)
+	if err != nil {
+		logger.Error("Could not create clickhouse reader: ", err)
+		os.Exit(1)
+	}
+
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/api/v1/write", handler.NewRemoteWriteHandler(rwBatcher))
-	mux.Handle("/api/v1/read", handler.NewRemoteReadHandler())
+	mux.Handle("/api/v1/read", handler.NewRemoteReadHandler(chReader))
 	mux.Handle("/api/v1/query", handler.NewInstantQueryHandler())
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "OK")

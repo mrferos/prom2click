@@ -39,7 +39,7 @@ func NewRemoteWriteHandler(batcher remotewrite.Batcher) http.Handler {
 			logger.Error("Could not decode write request: ", err)
 		}
 
-		logger.Info("Received write request")
+		//logger.Info("Received write request")
 		err = batcher.Add(*wr)
 		if err != nil {
 			rwMetric.WithLabelValues("cannot_add_to_batcher").Inc()

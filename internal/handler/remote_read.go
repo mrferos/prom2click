@@ -1,14 +1,16 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/prometheus/storage/remote"
 	"log/slog"
 	"net/http"
+	"prom2click/internal/click"
 )
 
-func NewRemoteReadHandler() http.Handler {
+func NewRemoteReadHandler(reader click.Reader) http.Handler {
 	logger := slog.Default().With("handler", "RemoteRead")
 	rrMetric := promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "prom2click_remote_read_requests_total",
@@ -24,7 +26,25 @@ func NewRemoteReadHandler() http.Handler {
 			return
 		}
 
-		logger.Info("Received read request", rr)
+		qr, err := reader.Read(r.Context(), rr)
+		if err != nil {
+			rrMetric.WithLabelValues("cannot_read_from_clickhouse").Inc()
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error("Could not read from clickhouse: ", err)
+			return
+		}
 
+		//w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Type", "application/x-protobuf")
+		w.Header().Add("Content-Encoding", "snappy")
+		fmt.Printf("%v", qr.Results)
+		if err := remote.EncodeReadResponse(qr, w); err != nil {
+			rrMetric.WithLabelValues("cannot_encode_read_response").Inc()
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error("Could not encode read response: ", err)
+			return
+		}
+
+		logger.Info("Processed read request")
 	})
 }

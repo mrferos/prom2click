@@ -3,10 +3,8 @@ package remotewrite
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/prometheus/prometheus/prompb"
-	"prom2click/internal/click"
 	"sync"
 	"time"
 )
@@ -79,7 +77,10 @@ func (b *BatcherImpl) start() {
 				}
 
 				for _, sample := range ts.Samples {
-					batch.Append(sample.Timestamp, name, labels, sample.Value)
+					seconds := sample.Timestamp / 1000
+					nanoseconds := (sample.Timestamp % 1000) * int64(time.Millisecond)
+
+					batch.Append(time.Unix(seconds, nanoseconds), name, labels, sample.Value)
 					seenSamples++
 
 					if seenSamples >= b.maxBatchSize {
@@ -106,17 +107,10 @@ func (b *BatcherImpl) getBatch() (driver.Batch, error) {
 	return b.clickhouseConn.PrepareBatch(context.Background(), "INSERT INTO metrics (timestamp, metric_name, labels, value) VALUES")
 }
 
-func NewBatcher() (*BatcherImpl, error) {
+func NewBatcher(conn driver.Conn) (*BatcherImpl, error) {
 	maxBatchSize := 1000
 	batchTimeout := 10 * time.Second
 	wg := &sync.WaitGroup{}
-
-	//TODO: make establishing clickhouse connection better
-	conn, err := click.GetConnection()
-
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to clickhouse: %w", err)
-	}
 
 	b := &BatcherImpl{
 		wg:             wg,
