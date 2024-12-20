@@ -7,7 +7,7 @@ import (
 
 func GetConnection() (driver.Conn, error) {
 	return clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"localhost:19000"},
+		Addr: []string{"localhost:9000"},
 		Auth: clickhouse.Auth{
 			Database: "default",
 			Username: "default",

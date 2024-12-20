@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s # How often to scrape targets by default.
+  evaluation_interval: 15s # How often to evaluate rules.
+
+remote_write:
+  - url: http://host.docker.internal:8080/api/v1/write
+
+remote_read:
+  - url: http://host.docker.internal:8080/api/v1/read
+
+scrape_configs:
+  # Scrape itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Scrape ClickHouse metrics exporter (optional)
+  - job_name: "clickhouse"
+    static_configs:
+      - targets: ["clickhouse:9363"] # Adjust if you deploy a metrics exporter

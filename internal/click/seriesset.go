@@ -21,7 +21,7 @@ func (s *SeriesSet) Next() bool {
 }
 
 func (s *SeriesSet) At() storage.Series {
-
+	return nil
 }
 
 func (s *SeriesSet) Err() error {

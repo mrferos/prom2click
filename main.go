@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log/slog"
 	"net/http"
 	"os"
@@ -31,7 +32,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/api/v1/write", handler.NewRemoteWriteHandler(rwBatcher))
+	mux.Handle("/api/v1/read", handler.NewRemoteReadHandler())
 	mux.Handle("/api/v1/query", handler.NewInstantQueryHandler())
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "OK")
