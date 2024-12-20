@@ -61,10 +61,10 @@ func (r *ReaderImpl) query(ctx context.Context, query *prompb.Query) (*prompb.Qu
 
 		switch label.Type {
 		case prompb.LabelMatcher_EQ:
-			qb = qb.Where("mapContains(labels, ?, ?)", label.Name, label.Value)
+			qb = qb.Where("labels[?] = ?", label.Name, label.Value)
 			break
 		case prompb.LabelMatcher_NEQ:
-			qb = qb.Where("NOT mapContains(labels, ?, ?)", label.Name, label.Value)
+			qb = qb.Where("NOT labels[?] = ?", label.Name, label.Value)
 			break
 		case prompb.LabelMatcher_RE:
 			qb = qb.Where("labels[?] IS NOT NULL", label.Name)

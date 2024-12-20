@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/prometheus/storage/remote"
@@ -37,7 +36,6 @@ func NewRemoteReadHandler(reader click.Reader) http.Handler {
 		//w.WriteHeader(http.StatusOK)
 		w.Header().Add("Content-Type", "application/x-protobuf")
 		w.Header().Add("Content-Encoding", "snappy")
-		fmt.Printf("%v", qr.Results)
 		if err := remote.EncodeReadResponse(qr, w); err != nil {
 			rrMetric.WithLabelValues("cannot_encode_read_response").Inc()
 			w.WriteHeader(http.StatusInternalServerError)
